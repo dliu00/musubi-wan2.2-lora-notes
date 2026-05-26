@@ -1,8 +1,7 @@
-# README
+# musubi\-wan2\.2\-lora\-notes 
 
 *issues and some process\-notes for training wan2\.2\-lora based on musubi\-tuner*
----
-## musubi\-wan2\.2\-lora\-notes 
+
 ---
 ## 仓库简介 
 本仓库仅为个人自用学习备份笔记，用于记录基于 Musubi-Tuner 框架，实操 Wan2.2-I2V-A14B 图生视频模型 LoRA 微调的完整流程、固定配置、常用指令、踩坑问题以及对应的解决方案。所有内容仅服务于本人日常查阅，非公开教程，无任何商用属性。
