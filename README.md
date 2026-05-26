@@ -251,7 +251,10 @@ python src/musubi_tuner/convert_lora.py \
 
 **使用规范**：是ai总结生成的，实际上运行一次的结果可以直接分别用于两个分支，不用区分low noise和high noise
 
-**把Lora复制到comfyui目录**：cp ~/workspace/lora/manblue_i2v_lora.safetensors /root/ComfyUI/models/loras/
+**把Lora复制到comfyui目录**：
+```bash
+cp ~/workspace/lora/manblue_i2v_lora.safetensors /root/ComfyUI/models/loras/
+```
 
 ---
 
