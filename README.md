@@ -189,8 +189,42 @@ print('✅ DiT模型合并完成')
 
 整合FP8权重压缩、CPU梯度卸载全部优化参数，直接完整复制运行，禁止拆分换行：
 
-```bash
+<!--
+少alpha
 accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 src/musubi_tuner/wan_train_network.py --task i2v-A14B --dit /mnt/scratch/wan_merged_model/dit.safetensors --vae /root/ai-models/Wan-AI/Wan2.2-I2V-A14B/Wan2.1_VAE.pth --t5 /root/ai-models/Wan-AI/Wan2.2-I2V-A14B/models_t5_umt5-xxl-enc-bf16.pth --dataset_config dataset.toml --sdpa --mixed_precision bf16 --fp8_base --fp8_scaled --gradient_checkpointing --gradient_checkpointing_cpu_offload --max_data_loader_n_workers 0 --network_module networks.lora_wan --network_dim 32 --timestep_sampling shift --discrete_flow_shift 5.0 --min_timestep 0 --max_timestep 900 --max_train_epochs 16 --save_every_n_epochs 1 --seed 42 --output_dir /mnt/scratch/lora_output --output_name my_i2v_lora --optimizer_type adamw8bit --learning_rate 2e-4
+-->
+
+```bash
+accelerate launch \
+  --num_cpu_threads_per_process 1 \
+  --mixed_precision bf16 \
+  src/musubi_tuner/wan_train_network.py \
+  --task i2v-A14B \
+  --dit /mnt/scratch/wan_merged_model/dit.safetensors \
+  --vae /root/ai-models/Wan-AI/Wan2.2-I2V-A14B/Wan2.1_VAE.pth \
+  --t5 /root/ai-models/Wan-AI/Wan2.2-I2V-A14B/models_t5_umt5-xxl-enc-bf16.pth \
+  --dataset_config dataset.toml \
+  --sdpa \
+  --mixed_precision bf16 \
+  --fp8_base \
+  --fp8_scaled \
+  --gradient_checkpointing \
+  --gradient_checkpointing_cpu_offload \
+  --max_data_loader_n_workers 0 \
+  --network_module networks.lora_wan \
+  --network_dim 32 \
+  --network_alpha 16 \
+  --timestep_sampling shift \
+  --discrete_flow_shift 5.0 \
+  --min_timestep 0 \
+  --max_timestep 900 \
+  --max_train_epochs 25 \
+  --save_every_n_epochs 1 \
+  --seed 42 \
+  --output_dir /mnt/scratch/lora_output \
+  --output_name my_i2v_lora_dim32 \
+  --optimizer_type adamw8bit \
+  --learning_rate 1e-4
 
 ```
 
