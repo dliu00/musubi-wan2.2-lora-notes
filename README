@@ -1,6 +1,6 @@
-# musubi\-wan2\.2\-lora\-notes
+# musubi-wan2.2-lora-notes
 
-*issues and some process\-notes for training wan2\.2\-lora based on musubi\-tuner*
+*issues and some process-notes for training wan2.2-lora based on musubi-tuner*
 
 ---
 ## 仓库简介 
@@ -10,23 +10,23 @@
 
 ## 一、基础前置信息
 
-### 1\.1 运行基础参数
+### 1.1 运行基础参数
 
-- 训练框架：Musubi\-Tuner
+- 训练框架：Musubi-Tuner
 
-- 适配模型：Wan2\.2 I2V\-A14B（仅支持图生视频，不兼容文生视频模型）
+- 适配模型：Wan2.2 I2V-A14B（仅支持图生视频，不兼容文生视频模型）
 
-- 运行环境：独立 Conda 虚拟环境 `musubi\_env`
+- 运行环境：独立 Conda 虚拟环境 `musubi_env`
 
 - 硬件门槛：≥24G 独立显存，训练强制开启 FP8 显存优化 \+ CPU梯度卸载
 
 - 训练模式：轻量化 LoRA 微调，全程不篡改原始大模型权重，24G显存最优适配方案
 
-### 1\.2 必备依赖模型文件
+### 1.2 必备依赖模型文件
 
-- 文本编码器：`models\_t5\_umt5\-xxl\-enc\-bf16\.pth`
+- 文本编码器：`models_t5_umt5-xxl-enc-bf16.pth`
 
-- 专属VAE：`Wan2\.1\_VAE\.pth`
+- 专属VAE：`Wan2.1_VAE.pth`
 
 - DiT主干模型：多份dit系列safetensors分片文件（需手动合并后方可使用）
 
@@ -34,7 +34,7 @@
 
 ## 二、数据集搭建规范
 
-### 2\.1 固定目录结构
+### 2.1 固定目录结构
 
 目录名称、大小写、层级不可随意修改，否则直接触发报错：
 
@@ -45,17 +45,17 @@ train_data/
 
 ```
 
-### 2\.2 数据集制作硬性规则
+### 2.2 数据集制作硬性规则
 
-1. 一一对应原则：每一张训练原图，必须配套同名txt标签文件（例：001\.jpg 对应 001\.txt），禁止空文件、重复文件、无效垃圾素材；
+1. 一一对应原则：每一张训练原图，必须配套同名txt标签文件（例：001.jpg 对应 001.txt），禁止空文件、重复文件、无效垃圾素材；
 
 2. 触发词规则：所有标签txt文件，首位关键词统一设置为 **manblue**，作为LoRA专属激活触发词；
 
-3. 素材建议：单角色定向训练推荐15\-30张高清素材，画面聚焦人物全身/面部，画风统一、背景简洁，禁止多人物同框画面。
+3. 素材建议：单角色定向训练推荐15-30张高清素材，画面聚焦人物全身/面部，画风统一、背景简洁，禁止多人物同框画面。
 
-### 2\.3 数据集配置文件
+### 2.3 数据集配置文件
 
-配置文件 `dataset\.toml` 存放于musubi\-tuner项目根目录，参数为实测最优值，无需二次调整：
+配置文件 `dataset.toml` 存放于musubi-tuner项目根目录，参数为实测最优值，无需二次调整：
 
 ```toml
 [general]
@@ -76,18 +76,18 @@ num_repeats = 1
 
 ## 三、Accelerate 环境初始化
 
-### 3\.1 功能说明
+### 3.1 功能说明
 
 首次训练必须初始化配置，用于规避多进程报错、显存分配异常、训练无故中断、精度丢失等问题；后续重复训练无需重新配置。
 
-### 3\.2 初始化命令
+### 3.2 初始化命令
 
 ```bash
 accelerate config
 
 ```
 
-### 3\.3 逐项配置答案
+### 3.3 逐项配置答案
 
 1. This machine
 
@@ -109,9 +109,9 @@ accelerate config
 
 10. no
 
-### 3\.4 配置验证
+### 3.4 配置验证
 
-执行下方命令，输出内容包含 `mixed\_precision=bf16`、`num\_processes=1` 即为配置成功：
+执行下方命令，输出内容包含 `mixed_precision=bf16`、`num_processes=1` 即为配置成功：
 
 ```bash
 accelerate env
@@ -120,26 +120,26 @@ accelerate env
 
 ---
 
-## 四、Pre\-Caching 预缓存操作
+## 四、Pre-Caching 预缓存操作
 
-**重要备注**：Wan2\.2 I2V图生视频缓存与T2V文生视频缓存不互通，禁止混用；全新训练前务必清空旧缓存，未添加 `\-\-i2v` 参数会直接抛出KeyError报错。
+**重要备注**：Wan2.2 I2V图生视频缓存与T2V文生视频缓存不互通，禁止混用；全新训练前务必清空旧缓存，未添加 `--i2v` 参数会直接抛出KeyError报错。
 
-### 4\.1 清空历史旧缓存
+### 4.1 清空历史旧缓存
 
 ```bash
 rm -rf ./train_data/cache/*
 
 ```
 
-### 4\.2 T5文本编码缓存生成
+### 4.2 T5文本编码缓存生成
 
 ```bash
 python src/musubi_tuner/wan_cache_text_encoder_outputs.py --dataset_config dataset.toml --t5 /root/ai-models/Wan-AI/Wan2.2-I2V-A14B/models_t5_umt5-xxl-enc-bf16.pth --batch_size 1
 ```
 
-### 4\.3 I2V专属VAE潜像缓存
+### 4.3 I2V专属VAE潜像缓存
 
-该命令必须携带 `\-\-i2v` 参数，适配图生视频首帧专属潜像逻辑：
+该命令必须携带 `--i2v` 参数，适配图生视频首帧专属潜像逻辑：
 
 ```bash
 python src/musubi_tuner/wan_cache_latents.py --dataset_config dataset.toml --vae /root/ai-models/Wan-AI/Wan2.2-I2V-A14B/Wan2.1_VAE.pth --i2v --batch_size 1
@@ -150,11 +150,11 @@ python src/musubi_tuner/wan_cache_latents.py --dataset_config dataset.toml --vae
 
 ## 五、DiT切片模型合并（服务器专属）
 
-### 5\.1 注意事项
+### 5.1 注意事项
 
 服务器 `/mnt/scratch` 为临时挂载磁盘，服务器重启后内部数据自动清空；每次重启服务器后，必须重新执行合并脚本，否则无法启动训练。
 
-### 5\.2 一键合并脚本
+### 5.2 一键合并脚本
 
 ```bash
 python -c "
@@ -172,7 +172,7 @@ print('✅ DiT模型合并完成')
 
 ```
 
-### 5\.3 合并完成固定路径
+### 5.3 合并完成固定路径
 
 ```plaintext
 /mnt/scratch/wan_merged_model/dit.safetensors
@@ -183,7 +183,7 @@ print('✅ DiT模型合并完成')
 
 ## 六、LoRA正式训练指令
 
-### 6\.1 启动命令（24G显存专属优化版）
+### 6.1 启动命令（24G显存专属优化版）
 
 整合FP8权重压缩、CPU梯度卸载全部优化参数，直接完整复制运行，禁止拆分换行：
 
@@ -192,38 +192,38 @@ accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 src/mus
 
 ```
 
-### 6\.2 核心参数释义
+### 6.2 核心参数释义
 
-- `\-\-task i2v\-A14B`：绑定图生视频专属训练任务，适配模型底层网络
+- `--task i2v-A14B`：绑定图生视频专属训练任务，适配模型底层网络
 
-- `\-\-network\_dim 32`：LoRA维度，平衡拟合度与过拟合风险，当前最优参数
+- `--network_dim 32`：LoRA维度，平衡拟合度与过拟合风险，当前最优参数
 
-- `\-\-fp8\_base / \-\-fp8\_scaled`：开启FP8权重压缩，降低60%左右显存占用
+- `--fp8_base / --fp8_scaled`：开启FP8权重压缩，降低60%左右显存占用
 
-- `gradient\_checkpointing\_cpu\_offload`：梯度迁移至CPU，解决24G显存OOM溢出问题
+- `gradient_checkpointing_cpu_offload`：梯度迁移至CPU，解决24G显存OOM溢出问题
 
-- `\-\-discrete\_flow\_shift 5\.0`：Wan2\.2官方默认扩散偏移值，禁止随意修改
+- `--discrete_flow_shift 5.0`：Wan2.2官方默认扩散偏移值，禁止随意修改
 
-- `\-\-optimizer\_type adamw8bit`：8位优化器，提升训练稳定性、节省显存
+- `--optimizer_type adamw8bit`：8位优化器，提升训练稳定性、节省显存
 
-- `\-\-max\_train\_epochs 16`：总迭代轮次，每1个epoch自动保存一份LoRA权重
+- `--max_train_epochs 16`：总迭代轮次，每1个epoch自动保存一份LoRA权重
 
 ---
 
 ## 七、训练产物与格式转换
 
-### 7\.1 权重保存路径
+### 7.1 权重保存路径
 
 ```plaintext
 /mnt/scratch/lora_output/my_i2v_lora.safetensors
 
 ```
 
-### 7\.2 产物基础属性
+### 7.2 产物基础属性
 
 文件格式：safetensors；文件大小：30\~80MB；原生为单分支LoRA，无法直接用于双分支工作流，需格式转换，否则会出现雪花屏、画面崩坏问题。
 
-### 7\.3 高低噪分支转换命令
+### 7.3 高低噪分支转换命令
 
 转换仅修改文件内部标记，不改动原始权重，适配ComfyUI双分支工作流：
 
@@ -263,21 +263,21 @@ python src/musubi_tuner/convert_lora.py \
 
 ## 九、ComfyUI 推理流程
 
-1. 加载全套基础模型：DiT主干模型 \+ Wan2\.1 VAE \+ T5文本编码器；
+1. 加载全套基础模型：DiT主干模型 \+ Wan2.1 VAE \+ T5文本编码器；
 
 2. 替换专用节点：废弃通用加载LoRA节点，使用I2V专属双分支加载节点；
 
-3. 分别挂载转换后的high、low双分支LoRA，初始权重统一设置0\.5；
+3. 分别挂载转换后的high、low双分支LoRA，初始权重统一设置0.5；
 
 4. 导入参考首图，提示词首位填写专属触发词manblue；
 
 5. 执行推理，根据画面状态微调权重参数。
 
-### 9\.1 效果微调方案
+### 9.1 效果微调方案
 
-- 人物特征微弱：逐步上调权重，上限1\.0
+- 人物特征微弱：逐步上调权重，上限1.0
 
-- 画面闪烁、人脸畸形、雪花屏：下调权重至0\.25\~0\.4
+- 画面闪烁、人脸畸形、雪花屏：下调权重至0.25\~0.4
 
 - 风格跑偏：精简提示词，删除与训练角色冲突的描述词汇
 
@@ -285,7 +285,7 @@ python src/musubi_tuner/convert_lora.py \
 
 ## 十、常见报错及解决方案
 
-1. **KeyError: latents\_image**：复用T2V缓存 / 预缓存命令未添加\-\-i2v参数；清空全部缓存，重新执行I2V专属潜像缓存命令。
+1. **KeyError: latents_image**：复用T2V缓存 / 预缓存命令未添加--i2v参数；清空全部缓存，重新执行I2V专属潜像缓存命令。
 
 2. **显存溢出OOM**：未开启FP8压缩、未开启梯度CPU卸载；直接使用文档内置完整训练命令。
 
@@ -295,7 +295,7 @@ python src/musubi_tuner/convert_lora.py \
 
 5. **命令提示找不到文件**：自定义错误路径；直接使用文档内绝对路径指令。
 
-6. **加载LoRA出现雪花屏**：单文件直接接入双分支、权重数值过高；拆分高低噪分支，权重下调至0\.3\~0\.5。
+6. **加载LoRA出现雪花屏**：单文件直接接入双分支、权重数值过高；拆分高低噪分支，权重下调至0.3\~0.5。
 
 ---
 
@@ -309,7 +309,7 @@ python src/musubi_tuner/convert_lora.py \
 
 4. 程序自动迭代epoch、step，无报错、无强制闪退退出；
 
-5. 每轮epoch自动保存LoRA权重，文件大小维持在30\-80MB区间。
+5. 每轮epoch自动保存LoRA权重，文件大小维持在30-80MB区间。
 
 ---
 
