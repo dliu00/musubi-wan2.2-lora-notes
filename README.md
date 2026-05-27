@@ -132,6 +132,14 @@ accelerate env
 rm -rf ./train_data/cache/*
 
 ```
+###  激活环境/进入目录
+
+```bash
+conda activate musubi_env/
+```
+```bash
+cd musubi-tuner/
+```
 
 ### 4\.2 T5文本编码缓存生成
 
@@ -267,7 +275,7 @@ accelerate launch \
 
 ```bash
 python src/musubi_tuner/convert_lora.py \
---input /root/workspace/musubi-tuner/lora/my_i2v_lora.safetensors \
+--input /mnt/scratch/lora_output/my_i2v_lora.safetensors \
 --output /root/workspace/musubi-tuner/lora/my_i2v_lora_low.safetensors \
 --target other
 
@@ -277,7 +285,7 @@ python src/musubi_tuner/convert_lora.py \
 
 ```bash
 python src/musubi_tuner/convert_lora.py \
---input /root/workspace/musubi-tuner/lora/my_i2v_lora.safetensors \
+--input /mnt/scratch/lora_output/my_i2v_lora.safetensors \
 --output /root/workspace/musubi-tuner/lora/my_i2v_lora_high.safetensors \
 --target attn
 
@@ -285,7 +293,7 @@ python src/musubi_tuner/convert_lora.py \
 
 **使用规范**：是ai总结生成的，实际上运行一次的结果可以直接分别用于两个分支，不用区分low noise和high noise
 
-**把Lora复制到comfyui目录**：
+**把Lora复制到comfyui目录(lora上传到wan服务器上的 ~/workspace/lora 目录)**：
 ```bash
 cp ~/workspace/lora/manblue_i2v_lora.safetensors /root/ComfyUI/models/loras/
 ```
