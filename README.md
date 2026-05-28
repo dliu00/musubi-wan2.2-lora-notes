@@ -158,7 +158,7 @@ python src/musubi_tuner/wan_cache_latents.py --dataset_config dataset.toml --vae
 
 ---
 
-## 五、DiT切片模型合并（服务器专属）
+## 五、DiT切片模型合并（服务器专属）（分开训练不用）
 
 ### 5\.1 注意事项
 
@@ -193,7 +193,7 @@ print('✅ DiT模型合并完成')
 
 ## 六、LoRA正式训练指令
 
-### 6\.1 启动命令（24G显存专属优化版）
+### 6\.1 启动命令（24G显存专属优化版）（分开训练）
 
 整合FP8权重压缩、CPU梯度卸载全部优化参数，直接完整复制运行，禁止拆分换行：
 
@@ -227,7 +227,7 @@ accelerate launch \
   --max_train_epochs 25 \
   --save_every_n_epochs 1 \
   --seed 42 \
-  --output_dir /mnt/scratch/lora_output \
+  --output_dir /root/workspace/musubi-tuner/lora \
   --output_name my_i2v_lora_dim32 \
   --blocks_to_swap 35 \
   --optimizer_type adamw8bit \
@@ -261,7 +261,7 @@ accelerate launch \
   --max_train_epochs 25 \
   --save_every_n_epochs 1 \
   --seed 42 \
-  --output_dir /mnt/scratch/lora_output \
+  --output_dir /root/workspace/musubi-tuner/lora \
   --output_name my_i2v_lora_dim32 \
   --blocks_to_swap 35 \
   --optimizer_type adamw8bit \
