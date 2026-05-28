@@ -223,15 +223,16 @@ accelerate launch \
   --timestep_sampling shift \
   --discrete_flow_shift 8.0 \
   --min_timestep 0 \
-  --max_timestep 900 \
-  --max_train_epochs 25 \
-  --save_every_n_epochs 1 \
+  --max_timestep 875 \
   --seed 42 \
   --output_dir /root/workspace/musubi-tuner/lora \
-  --output_name my_i2v_lora_dim32 \
   --blocks_to_swap 35 \
   --optimizer_type adamw8bit \
-  --learning_rate 1e-4
+  --learning_rate 1e-4 \
+  --preserve_distribution_shape \
+  --max_train_epochs 25 \
+  --save_every_n_epochs 1 \
+  --output_name my_i2v_lora_dim32 \
 
 ```
 
@@ -256,16 +257,17 @@ accelerate launch \
   --network_alpha 16 \
   --timestep_sampling shift \
   --discrete_flow_shift 8.0 \
-  --min_timestep 0 \
-  --max_timestep 900 \
-  --max_train_epochs 25 \
-  --save_every_n_epochs 1 \
+  --min_timestep 875 \
+  --max_timestep 1000 \
   --seed 42 \
   --output_dir /root/workspace/musubi-tuner/lora \
-  --output_name my_i2v_lora_dim32 \
   --blocks_to_swap 35 \
   --optimizer_type adamw8bit \
-  --learning_rate 1e-4
+  --learning_rate 1e-4 \
+  --preserve_distribution_shape \
+  --max_train_epochs 25 \
+  --save_every_n_epochs 1 \
+  --output_name my_i2v_lora_dim32 \
 
 ```
 ### 6\.2 核心参数释义
@@ -291,7 +293,14 @@ accelerate launch \
 ### 7\.1 权重保存路径
 
 ```plaintext
+#合并训练
 /mnt/scratch/lora_output/my_i2v_lora.safetensors
+
+```
+
+```plaintext
+#分开训练
+/root/workspace/musubi-tuner/lora/my_i2v_lora.safetensors
 
 ```
 
@@ -307,8 +316,8 @@ accelerate launch \
 
 ```bash
 python src/musubi_tuner/convert_lora.py \
---input /mnt/scratch/lora_output/my_i2v_lora.safetensors \
---output /root/workspace/musubi-tuner/lora/my_i2v_lora_low.safetensors \
+--input /root/workspace/musubi-tuner/lora/my_i2v_lora.safetensors \
+--output /root/workspace/musubi-tuner/lora/processed_lora/my_i2v_lora_low.safetensors \
 --target other
 
 ```
@@ -317,9 +326,9 @@ python src/musubi_tuner/convert_lora.py \
 
 ```bash
 python src/musubi_tuner/convert_lora.py \
---input /mnt/scratch/lora_output/my_i2v_lora.safetensors \
---output /root/workspace/musubi-tuner/lora/my_i2v_lora_high.safetensors \
---target attn
+--input /root/workspace/musubi-tuner/lora/my_i2v_lora.safetensors \
+--output /root/workspace/musubi-tuner/lora/processed_lora/my_i2v_lora_low.safetensors \
+--target other
 
 ```
 
@@ -327,7 +336,7 @@ python src/musubi_tuner/convert_lora.py \
 
 **把Lora复制到comfyui目录(lora上传到wan服务器上的 ~/workspace/lora 目录)**：
 ```bash
-cp ~/workspace/lora/manblue_i2v_lora.safetensors /root/ComfyUI/models/loras/
+cp ~/workspace/lora/processed_lora/manblue_i2v_lora.safetensors /root/ComfyUI/models/loras/
 ```
 
 ---
